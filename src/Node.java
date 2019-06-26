@@ -45,6 +45,7 @@ public class Node implements Serializable{
     private String parent;
     private HashMap<String, int[]> snapshot;
     private int[] global_snapshot;
+    private boolean consistency;
 
     private HashMap<String, String[]> neighbors_information;
 
@@ -52,6 +53,18 @@ public class Node implements Serializable{
     private ArrayList<com_msg_packaging> buffer;
 
     private com_msg_packaging processing_message;
+
+    private boolean global_snapshot_complete;
+
+    private boolean ok_for_next_global_snapshot;
+
+    private String next_candidate;
+
+    private boolean global_snapshot_start_point;
+
+    private boolean global_snapshot_touchdown;
+
+    private boolean has_replied;
 
     // Constructor of Node
     //public Node(String in_nodeID, String[] node_config, String[] sys_setup) {
@@ -108,6 +121,14 @@ public class Node implements Serializable{
 
         this.global_snapshot = new int[this.node_numbers];
 
+        this.ok_for_next_global_snapshot = false;
+
+        this.global_snapshot_start_point = false;
+
+        this.global_snapshot_touchdown = false;
+
+        this.has_replied = false;
+
     }
 
 
@@ -145,6 +166,8 @@ public class Node implements Serializable{
 
     public int[] getGlobal_snapshot() {return this.global_snapshot;}
 
+    public boolean getConsitency() {return this.consistency;}
+
     public HashMap<String, String[]> getNeighbors_information() {return this.neighbors_information;}
 
 /*
@@ -166,6 +189,18 @@ public class Node implements Serializable{
     public ArrayList<com_msg_packaging> getBuffer() {return this.buffer;}
 
     public com_msg_packaging getProcessing_message() {return this.processing_message;}
+
+    public boolean getGlobal_snapshot_complete() {return this.global_snapshot_complete;}
+
+    public boolean getOk_for_next_global_snapshot() {return this.ok_for_next_global_snapshot;}
+
+    public String getNext_candidate() {return this.next_candidate;}
+
+    public boolean getGlobal_snapshot_start_point() {return this.global_snapshot_start_point;}
+
+    public boolean getGlobal_snapshot_touchdown() {return this.global_snapshot_touchdown;}
+
+    public boolean getHas_replied() {return this.has_replied;}
 
     // Set Functions
     public void setNode_ip(String dv) {this.node_ip = dv;}
@@ -215,6 +250,8 @@ public class Node implements Serializable{
         this.global_snapshot[node_number] = n_logical_time;
     }
 
+    public void setConsistency(boolean dv) {this.consistency = dv;}
+
     public void resetNeighbos_info(HashMap<String, String[]> reset_set)
     {
         this.neighbors_information.clear();
@@ -225,4 +262,16 @@ public class Node implements Serializable{
     public void resetBuffer() {this.buffer.clear();}
 
     public void setProcessing_message(com_msg_packaging dv) {this.processing_message = new com_msg_packaging(dv);}
+
+    public void setGlobal_snapshot_complete(boolean dv) {this.global_snapshot_complete = dv;}
+
+    public void setOk_for_next_global_snapshot(boolean dv) {this.ok_for_next_global_snapshot = dv;}
+
+    public void setNext_candidate(String dv) {this.next_candidate=dv;}
+
+    public void setGlobal_snapshot_start_point(boolean dv) {this.global_snapshot_start_point=dv;}
+
+    public void setGlobal_snapshot_touchdown(boolean dv) {this.global_snapshot_touchdown = dv;}
+
+    public void setHas_replied(boolean dv) {this.has_replied = dv;}
 }

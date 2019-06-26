@@ -18,10 +18,50 @@ public class CL_snapshot implements Runnable{
 
     @Override
     public void run() {
-        while(true) {
-            global_snapshot(this.node, this.play_role);
-            //System.out.println("Unprocessed message size: " + node.getBuffer().size());
+        //while(true) {
+        if(this.play_role.equals(roles.initiator)) {
+            //System.out.println("===============In initiator=================");
+            //while (!node.getOk_for_next_global_snapshot())
+                //System.out.print("Waiting global snapshot permission!\r");
+            //node.setOk_for_next_global_snapshot(false);
+
+            //if(node.getGlobal_snapshot_touchdown()) {
+
+                for (int i = 0; i < 5; i++) {
+                    node.setGlobal_snapshot_complete(false);
+                    while (!node.getGlobal_snapshot_complete()) {
+                        global_snapshot(this.node, this.play_role);
+                        //System.out.println("Unprocessed message size: " + node.getBuffer().size());
+                    }
+                    System.out.println("Global snapshot " + (i + 1) + " completed!");
+                    try {
+                        Thread.sleep(node.getSnapshotDelay());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                CL_snapshot.Next_Candidate(node);
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>Picked Candidate: " + node.getNext_candidate());
+                if(!node.getNext_candidate().equals("0"))
+                CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Okay_for_next);
+            //}
+
+        //else node.setGlobal_snapshot_touchdown(false);
         }
+
+        if(this.play_role.equals(roles.respondent)) {
+
+            while (!node.getGlobal_snapshot_touchdown()) {
+                //System.out.println("==========In Respondent=============");
+                global_snapshot(this.node, this.play_role);
+                //System.out.println("Unprocessed message size: " + node.getBuffer().size());
+            }
+
+            node.setGlobal_snapshot_touchdown(false);
+        }
+
     }
 
     public static void global_snapshot(Node node, roles play_role){
@@ -39,12 +79,19 @@ public class CL_snapshot implements Runnable{
 
             Global_Snapshot_Generator(node);
 
-            Global_Sanpshot_Consistent_Verification(node);
+            Global_Snapshot_Consistent_Verification(node);
 
+            File_Interface.write_file(node);
+
+            node.setGlobal_snapshot_complete(true);
+
+            CL_snapshot.Reset_CL_snapshot(node);
+
+            node.setHas_replied(false);
         }
         //System.out.println("Buffer size in CL: " + node.getBuffer());
         //if(play_role.equals(roles.respondent)){
-            while(!node.getBuffer().isEmpty()) {
+            while(!node.getBuffer().isEmpty() ) {
                 System.out.println("===========================================================================");
                 //System.out.println("First Element Buffer in CL: " + node.getBuffer().firstElement().getSender());
                 System.out.println("First Element Buffer in CL: " + node.getBuffer().get(0).getSender());
@@ -92,27 +139,37 @@ public class CL_snapshot implements Runnable{
                         node.setReceived_child_message_unit_increase();
                         System.out.println("Global Snapshot in reply : " + node.getSnapshot());
                         if (node.getExpected_child_message() == node.getReceived_child_message() &&
-                                !node.getParent().equals("Global_Snapshot_Initiator")) {
+                                !node.getParent().equals("Global_Snapshot_Initiator") &&
+                                !node.getHas_replied()) {
                             CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Maker_reply);
                             //System.out.println("Reset in Reply");
                             CL_snapshot.Reset_CL_snapshot(node);
+                            //node.resetBuffer();
+                            node.setHas_replied(true);
                         }
                         //}
                         break;
                     case Convergecast_visited:
                         //if(node.getVisited()) {
-                        System.out.println("Before subtraction: "+ node.getExpected_child_message());
-                        node.setExpected_child_message_unit_decrease();
-                        System.out.println("Expected message in visited zone: " + node.getExpected_child_message());
-                        if (node.getExpected_child_message() == 0 ) {
-                            CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Maker_reply);
-                            //System.out.println("Reset in visited");
-                            CL_snapshot.Reset_CL_snapshot(node);
-                        }
+                        //if(node.getExpectehid_cld_message() != 0) {
+                            System.out.println("Before subtraction: " + node.getExpected_child_message());
+                            node.setExpected_child_message_unit_decrease();
+                            System.out.println("Expected message in visited zone: " + node.getExpected_child_message());
+                            if (node.getExpected_child_message() == 0 && !node.getHas_replied()) {
+                                CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Maker_reply);
+                                //System.out.println("Reset in visited");
+                                CL_snapshot.Reset_CL_snapshot(node);
+                                //node.resetBuffer();
+                                //node.setVisited(false);
+                                node.setHas_replied(true);
+                            }
+                            //}
                         //}
                         break;
                 }
             }
+
+            //CL_snapshot.Reset_CL_snapshot(node);
         //}
 
     }
@@ -158,11 +215,47 @@ public class CL_snapshot implements Runnable{
                 com_requester maker_visited = new com_requester(maker_visited_msg);
                 maker_visited.send();
                 break;
+
+            case Okay_for_next:
+                com_msg_packaging okay_msg = new com_msg_packaging(
+                        node.getNid(), node.getLogical_time(),
+                        node.getNext_candidate(),
+                        node.getNeighbors_information().get(node.getNext_candidate())[0],
+                        node.getNeighbors_information().get(node.getNext_candidate())[1],
+                        com_msg_packaging.action_options.Okay_for_next);
+                com_requester okay_info = new com_requester(okay_msg);
+                okay_info.send();
+                break;
+
+            case Touchdown:
+                Vector<String> target = new Vector<>();
+                for(int i=0 ; i < node.getNode_numbers() ; i++){
+                    if(!String.valueOf(i).equals(node)) target.add(String.valueOf(i));
+                }
+                for (String t_receiver : target) {
+                    com_msg_packaging finish_msg = new com_msg_packaging(
+                            node.getNid(), node.getLogical_time(),
+                            t_receiver,
+                            node.getNeighbors_information().get(t_receiver)[0],
+                            node.getNeighbors_information().get(t_receiver)[1],
+                            com_msg_packaging.action_options.Inform_finish);
+                    com_requester inform_finish = new com_requester(finish_msg);
+                    inform_finish.send();
+                }
+                break;
+
         }
     }
 
+    public static void Next_Candidate(Node node){
+        String next_one;
+        if(node.getNid().equals(String.valueOf(node.getNode_numbers()-1)))
+            next_one = "0";
+        else
+            next_one = String.valueOf(Integer.parseInt(node.getNid()) + 1);
 
-
+        node.setNext_candidate(next_one);
+    }
 
     public static void Reset_CL_snapshot(Node node){
         node.resetExpected_child_message();
@@ -170,6 +263,8 @@ public class CL_snapshot implements Runnable{
         node.setVisited(false);
         node.setParent("");
         node.resetSnapshot();
+        //node.resetBuffer();
+        node.setHas_replied(false);
     }
 
     public static void Global_Snapshot_Generator(Node node){
@@ -186,7 +281,7 @@ public class CL_snapshot implements Runnable{
         System.out.println("Result of Global Snapshot: " + Arrays.toString(node.getGlobal_snapshot()));
     }
 
-    public static void Global_Sanpshot_Consistent_Verification(Node node){
+    public static void Global_Snapshot_Consistent_Verification(Node node){
 
         boolean temp = true;
         for(int j = 0; j < node.getNode_numbers(); j++) {
@@ -197,11 +292,27 @@ public class CL_snapshot implements Runnable{
 
         if(!temp) {
             System.out.println("Global Snapshot is not consistent!");
+            node.setConsistency(false);
         }
 
         else {
             System.out.println("Global Snapshot is consistent!");
+            node.setConsistency(true);
         }
 
+    }
+
+    public static void Global_snapshot_activator(Node node, CL_snapshot.roles play_role){
+        if(play_role.equals(roles.initiator)) {
+            CL_snapshot initiator = new CL_snapshot(node, CL_snapshot.roles.initiator);
+            Thread Global_snapshot_initiator = new Thread(initiator);
+            Global_snapshot_initiator.start();
+        }
+
+        if(play_role.equals(roles.respondent)) {
+            CL_snapshot respondent = new CL_snapshot(node, CL_snapshot.roles.respondent);
+            Thread Global_snapshot_respondent = new Thread(respondent);
+            Global_snapshot_respondent.start();
+        }
     }
 }

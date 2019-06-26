@@ -15,7 +15,11 @@ public class com_msg_packaging implements Serializable {
         MAP_request,
         Maker_request,
         Maker_reply,
-        Convergecast_visited
+        Convergecast_visited,
+        Okay_for_next,
+        Touchdown,
+        Inform_finish,
+        Inforn_activation
     }
     private action_options act_selected;
 /*

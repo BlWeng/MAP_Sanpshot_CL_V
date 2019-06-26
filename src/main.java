@@ -62,18 +62,50 @@ public class main {
         MAP_Protocol.MAP_protocol_executor(node, database.get(File_Interface.data_category.node_neighbors).get(node_ID),
                 database.get(File_Interface.data_category.node_specification));
 */
+        System.out.println("========================Finished MAP========================");
+
+        CL_snapshot.Global_snapshot_activator(node, CL_snapshot.roles.respondent);
+
         if(node.getNid().equals("0")) {
-            //CL_snapshot.global_snapshot(node, CL_snapshot.roles.initiator);
-            CL_snapshot initiator = new CL_snapshot(node, CL_snapshot.roles.initiator);
-            Thread Global_snapshot_initiator = new Thread(initiator);
-            Global_snapshot_initiator.start();
+            node.setGlobal_snapshot_start_point(true);
+            CL_snapshot.Global_snapshot_activator(node, CL_snapshot.roles.initiator);
         }
+
+
+/*
+        if(node.getNid().equals("0")) {
+            //node.setGlobal_snapshot_complete(false);
+            node.setOk_for_next_global_snapshot(true);
+            node.setGlobal_snapshot_start_point(true);
+        }
+        else node.setOk_for_next_global_snapshot(false);
+*/
+/*
+        if(node.getNid().equals("0")) {
+            node.setOk_for_next_global_snapshot(true);
+            node.setGlobal_snapshot_start_point(true);
+*/
+            //CL_snapshot.global_snapshot(node, CL_snapshot.roles.initiator);
+            //for(int i = 0; i < 5; i++) {
+                //node.setGlobal_snapshot_complete(false);
+/*
+                CL_snapshot initiator = new CL_snapshot(node, CL_snapshot.roles.initiator);
+                Thread Global_snapshot_initiator = new Thread(initiator);
+                Global_snapshot_initiator.start();
+*/
+                //while(!node.getGlobal_snapshot_complete())
+                    //System.out.print("***********Waiting " + (i+1) + " global snapshot completed!****************\r");
+            //}
+        //}
         //else {
+/*
             CL_snapshot respondent = new CL_snapshot(node, CL_snapshot.roles.respondent);
             Thread Global_snapshot_respondent = new Thread(respondent);
             Global_snapshot_respondent.start();
+*/
         //}
-
+        //while(true)
+        //System.out.print("Number of active threads from the given thread: " + Thread.activeCount() + "\r");
 
     }
 

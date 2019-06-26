@@ -76,9 +76,26 @@ public class com_handler implements Runnable, Serializable {
                         this.node.setNode_status(Node.status.active);
                     }
                 }
+                else if(in.getAct_selected().equals(com_msg_packaging.action_options.Okay_for_next)) {
+                /*
+                    if(node.getGlobal_snapshot_start_point()){
+                        node.setGlobal_snapshot_start_point(false);
+                        node.setGlobal_snapshot_touchdown(true);
+                        CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Touchdown);
+                    }
+                    else node.setOk_for_next_global_snapshot(true);
+                */
+                System.out.println("==================IN OKAY FOR NEXT======================");
+
+                    CL_snapshot.Global_snapshot_activator(node, CL_snapshot.roles.initiator);
+                }
+
+                else if(in.getAct_selected().equals(com_msg_packaging.action_options.Inform_finish)){
+                    node.setGlobal_snapshot_touchdown(true);
+                }
                 else
                 {
-                    Thread.sleep(100);
+                    //Thread.sleep(100);
                     System.out.println("Preparing to push in Buffer: " + in.getSender());
                     try {
                         this.node.setBuffer_pushin(in);
