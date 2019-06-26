@@ -22,6 +22,7 @@ public class MAP_Protocol {
     public static void sending_message(Node node, String receiver, String receiver_ip,String receiver_port,
                                        com_msg_packaging.action_options action)
     {
+        node.setLogical_time_unit_increase();
         com_msg_packaging message =
                 new com_msg_packaging(node.getNid(), node.getLogical_time(),
                                         receiver, receiver_ip, receiver_port, action);
@@ -53,7 +54,7 @@ public class MAP_Protocol {
                     sending_message(node, selected_destination,
                             neighbor_info.get(selected_destination)[0],
                             neighbor_info.get(selected_destination)[1],
-                            com_msg_packaging.action_options.snapshot_request);
+                            com_msg_packaging.action_options.MAP_request);
 
                     if(node.getMessage_sent() +1 >= node.getMaxNumber()) node.setNode_status(Node.status.passive);
 

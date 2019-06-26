@@ -25,6 +25,7 @@ public class com_handler implements Runnable, Serializable {
     }
     private duty ply_role;
 
+    private boolean task_processing;
 
     // constructor
     public com_handler(int id, Socket in_obj, Node node, duty in_role, ObjectInputStream ois, ObjectOutputStream oos) {
@@ -35,6 +36,8 @@ public class com_handler implements Runnable, Serializable {
         this.ply_role = in_role;
         this.ois = ois;
         this.oos = oos;
+
+        this.task_processing = false;
     }
 
 
@@ -51,24 +54,37 @@ public class com_handler implements Runnable, Serializable {
 
                 com_msg_packaging in = (com_msg_packaging) ois.readObject();
                 System.out.println(">> In ID: " + in.getSender() + " Host node: " + this.node.getNid());
+                System.out.println(">> Action: " + in.getAct_selected());
                 //System.out.println(">> Action: " + in.getAct_selected() + " Calling option: " + in.getCalling_action());
 
-                this.node.setLogical_time_assign_value_pls_one(in.getSender_logical_time());
+                //this.node.setLogical_time_assign_value_pls_one(in.getSender_logical_time());
+                this.node.setLogical_time_Fidge_Mattern(in.getSender_logical_time());
 
-                com_msg_packaging processing_msg = new com_msg_packaging(in);
-                processing_msg.setSender_logical_time(this.node.getLogical_time());
+                //com_msg_packaging processing_msg = new com_msg_packaging(in);
+                //processing_msg.setSender_logical_time(this.node.getLogical_time());
 
-                node.setMessage_receive_unit_increase();
+                this.node.setMessage_receive_unit_increase();
 
                 System.out.println("Message received: " + node.getMessage_receive());
 
-                if(this.node.getNode_status().equals(Node.status.passive)
-                        && this.node.getMessage_sent() < this.node.getMaxNumber()
-                            && in.getAct_selected().equals(com_msg_packaging.action_options.snapshot_request))
-                {
-                    this.node.setNode_status(Node.status.active);
-                }
 
+                if(in.getAct_selected().equals(com_msg_packaging.action_options.MAP_request)) {
+                    if (this.node.getNode_status().equals(Node.status.passive)
+                            && this.node.getMessage_sent() < this.node.getMaxNumber()
+                            && in.getAct_selected().equals(com_msg_packaging.action_options.MAP_request))
+                    {
+                        this.node.setNode_status(Node.status.active);
+                    }
+                }
+                else
+                {
+                    Thread.sleep(100);
+                    System.out.println("Preparing to push in Buffer: " + in.getSender());
+                    try {
+                        this.node.setBuffer_pushin(in);
+                    }catch (Exception e) {e.printStackTrace();}
+                    System.out.println("Message Buffer in handler size: " + this.node.getBuffer().size());
+                }
 
             }
         }catch(Exception e){}

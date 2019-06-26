@@ -37,18 +37,43 @@ public class main {
                 database.get(File_Interface.data_category.node_specification));
 
 */
-
+/*
         Node node = new Node( node_ID, database.get(File_Interface.data_category.node_specification).get(node_ID),
                 database.get(File_Interface.data_category.server_specification).get("Host"));
+*/
+        HashMap<String, String[]> neighbors_information = new HashMap<>();
+
+        for(String neighbor : database.get(File_Interface.data_category.node_neighbors).get(node_ID))
+        {
+            neighbors_information.put(neighbor, database.get(File_Interface.data_category.node_specification).get(neighbor).clone());
+        }
+        for(String key:neighbors_information.keySet()){
+            System.out.println(key + " : " + Arrays.toString(neighbors_information.get(key)));
+        }
+        Node node = new Node( node_ID, database.get(File_Interface.data_category.node_specification).get(node_ID),
+                database.get(File_Interface.data_category.server_specification).get("Host"), neighbors_information);
 
         if(status_cmd.equals("a")) node.setNode_status(Node.status.active);
 
         MAP_Protocol.server_establisher(node);
 
-
+/*
         while(node.getMessage_sent() +1 < node.getMaxNumber())
         MAP_Protocol.MAP_protocol_executor(node, database.get(File_Interface.data_category.node_neighbors).get(node_ID),
                 database.get(File_Interface.data_category.node_specification));
+*/
+        if(node.getNid().equals("0")) {
+            //CL_snapshot.global_snapshot(node, CL_snapshot.roles.initiator);
+            CL_snapshot initiator = new CL_snapshot(node, CL_snapshot.roles.initiator);
+            Thread Global_snapshot_initiator = new Thread(initiator);
+            Global_snapshot_initiator.start();
+        }
+        //else {
+            CL_snapshot respondent = new CL_snapshot(node, CL_snapshot.roles.respondent);
+            Thread Global_snapshot_respondent = new Thread(respondent);
+            Global_snapshot_respondent.start();
+        //}
+
 
     }
 

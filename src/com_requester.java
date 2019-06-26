@@ -29,14 +29,14 @@ public class com_requester {
             //this.node.setNm_msg_sent();
         while( this.requested && !this.sent) {
             try {
-                //com_port = new Socket(InetAddress.getLocalHost(), this.rv.getReceiver_port());
-
+                com_port = new Socket(InetAddress.getLocalHost(), this.rv.getReceiver_port());
+/*
                 String go_ip = this.rv.getReceiver_ip()+".utdallas.edu";
 
                 System.out.println("IP: " + go_ip);
 
                 com_port = new Socket(InetAddress.getByName(go_ip), this.rv.getReceiver_port());
-
+*/
 /*
                 String s_id;
 
