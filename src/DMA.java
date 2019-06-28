@@ -6,7 +6,7 @@ public class DMA {
     public enum enquiry{
         Create_Database,
         Show_Database_Result,
-        Configrate_System_Environment
+        Configurate_System_Environment
     }
 
     public static void Database_Inquiry_Administrator(Node node, enquiry option){
@@ -18,7 +18,7 @@ public class DMA {
             case Show_Database_Result:
                 Show_Database_Result(node.getDatabase());
                 break;
-            case Configrate_System_Environment:
+            case Configurate_System_Environment:
                 Node_Setup(node);
                 break;
 

@@ -93,6 +93,9 @@ public class Node implements Serializable{
     private String[] sys_setup;
     private HashMap<String, String[]> neighbors_information;
 
+    private int local_snapshot_time;
+
+    private String initiator;
 
     // Constructor of Node
     public Node(String in_nodeID) {
@@ -139,6 +142,10 @@ public class Node implements Serializable{
         this.MAP_buffer = new Vector<>();
 
         this.MAP_protocol_termination = false;
+
+        this.local_snapshot_time = -1;
+
+        this.initiator = "NONE";
 
     }
 
@@ -222,6 +229,10 @@ public class Node implements Serializable{
     public String[] getNode_config() {return this.node_config;}
     public String[] getSys_setup() {return this.sys_setup;}
     public HashMap<String, String[]> getNeighbors_information() {return this.neighbors_information;}
+
+    public int getLocal_snapshot_time() {return this.local_snapshot_time;}
+
+    public String getInitiator() {return this.initiator;}
 
     // Set Functions
 
@@ -355,5 +366,8 @@ public class Node implements Serializable{
         } catch (IOException e) { e.printStackTrace();}
     }
 
+    public void setLocal_snapshot_time_addone() {this.local_snapshot_time++;}
+    public void resetLocal_snapshot_time() {this.local_snapshot_time=0;}
 
+    public void setInitiator(String dv) {this.initiator = dv;}
 }

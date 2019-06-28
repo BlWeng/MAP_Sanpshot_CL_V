@@ -68,6 +68,7 @@ public class File_Interface {
             //String cwd = System.getProperty("user.home\\server01") + "\\record.txt";
             //String cwd = System.getProperty("\\home\\eng\\b\\bxw170030\\sever01") + "\\record.txt";
             //String cwd = System.getProperty("user.home") + "\\record.txt";
+            //String cwd = System.getProperty("user.home") + "\\configuration-" + node.getNid() + ".out";
             File f = new File(cwd);
             if (!f.exists()) {
                 f.createNewFile();

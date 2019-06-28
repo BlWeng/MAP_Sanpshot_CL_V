@@ -36,7 +36,7 @@ public class main {
 
 //        System.out.println("====================== Start of Database Request to DMA =========================");
 
-        DMA.Database_Inquiry_Administrator(node, DMA.enquiry.Configrate_System_Environment);
+        DMA.Database_Inquiry_Administrator(node, DMA.enquiry.Configurate_System_Environment);
 
 //        System.out.println("====================== End of Database Request to DMA =========================");
 
@@ -88,6 +88,8 @@ public class main {
 */
         System.out.println("!!!!!!!!!!!!!!!! Operating System Program of Application Terminated !!!!!!!!!!!!!!!!!!!!!");
         System.out.println("!!!!!!!!!!!!!!!!                  GOODBYE ^_^                       !!!!!!!!!!!!!!!!!!!!!");
+
+        //System.out.println("Running Thread: " + Thread.activeCount());
 
         //System.exit(0);
         return;

@@ -25,11 +25,15 @@ public class com_msg_packaging implements Serializable {
 
     private Vector<String> global_snapshot_sent_list;
 
+    private String initiator;
+
+    private int snapshot_it;
 
 
     public com_msg_packaging(String sender, int[] sender_lg_time, HashMap<String, int[]> sender_snapshot_set,
-                             Vector<String> sender_parent, Vector<String> in_global_snashot_sent_list,
-                             String receiver,String receiver_ip, String dest_port, action_options action){
+                             Vector<String> sender_parent, Vector<String> in_global_snapshot_sent_list,
+                             String receiver,String receiver_ip, String dest_port, action_options action,
+                             String in_initiator, int in_lsp_it){
         this.sender = sender;
         this.sender_snapshot_set = new HashMap<String, int[]>(sender_snapshot_set);
         this.receiver = receiver;
@@ -38,7 +42,9 @@ public class com_msg_packaging implements Serializable {
         this.act_selected = action;
         this.sender_logical_time = sender_lg_time;
         this.parent_graph = new Vector<String>(sender_parent);
-        this.global_snapshot_sent_list = new Vector<String>(in_global_snashot_sent_list);
+        this.global_snapshot_sent_list = new Vector<String>(in_global_snapshot_sent_list);
+        this.snapshot_it = in_lsp_it;
+        this.initiator = in_initiator;
     }
 
 
@@ -52,6 +58,8 @@ public class com_msg_packaging implements Serializable {
         this.receiver_port = in_req_msg.getReceiver_port();
         this.act_selected = in_req_msg.getAct_selected();
         this.parent_graph = new Vector<String>(in_req_msg.getParent_graph());
+        this.snapshot_it = in_req_msg.getSnapshot_it();
+        this.initiator = in_req_msg.getInitiator();
     }
 
     // Get functions
@@ -65,6 +73,8 @@ public class com_msg_packaging implements Serializable {
     public HashMap<String, int[]> getSender_snapshot_set() {return this.sender_snapshot_set;}
     public Vector<String> getParent_graph() {return this.parent_graph;}
     public Vector<String> getGlobal_snashot_sent_list() {return this.global_snapshot_sent_list;}
+    public int getSnapshot_it() {return this.snapshot_it;}
+    public String getInitiator() {return this.initiator;}
 
     // Set functions
 
@@ -80,5 +90,7 @@ public class com_msg_packaging implements Serializable {
     }
     public void setParent_graph(Vector<String> dv) {this.parent_graph = new Vector<String>(dv);}
     public void setGlobal_snashot_sent_list(Vector<String> dv) {this.global_snapshot_sent_list = new Vector<String>(dv);}
+    public void setSnapshot_it(int dv) {this.snapshot_it = dv;}
+    public void setInitiator(String dv) {this.initiator = dv;}
 
 }

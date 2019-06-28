@@ -1,9 +1,9 @@
-# s i x g l o b a l parameter s ( s e e above )
+# six global parameters ( s e e above )
 5 6 10 100 2000 15
 
 0 dc02 1234 # nodeID hostName listenPort
-1 dc03 1233
-2 dc04 1233
+1 dc03 1235
+2 dc04 1236
 3 dc05 1232
 4 dc06 1233
 

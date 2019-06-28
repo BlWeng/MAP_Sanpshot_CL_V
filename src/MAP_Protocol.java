@@ -55,7 +55,8 @@ public class MAP_Protocol implements Runnable
         com_msg_packaging message =
                 new com_msg_packaging(node.getNid(), node.getLogical_time(), node.getSnapshot(),
                                         node.getParent(),node.getGlobal_snapshot_finished_list(),
-                                        receiver, receiver_ip, receiver_port, action);
+                                        receiver, receiver_ip, receiver_port, action,
+                                        "NONE", -1);
         com_requester sending_msg = new com_requester(message);
         sending_msg.send();
         node.setMessage_sent_unit_increase();
@@ -93,6 +94,7 @@ public class MAP_Protocol implements Runnable
                 }catch (Exception e){e.printStackTrace();}
 
             System.out.println("Status: " + node.getNode_status());
+
 
             }
 

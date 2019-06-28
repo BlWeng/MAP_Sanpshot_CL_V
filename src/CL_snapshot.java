@@ -21,10 +21,13 @@ public class CL_snapshot implements Runnable{
 
     private String initiator;
 
+    private int snapshot_times;
+
     CL_snapshot(Node in_node, String in_initiator){
         this.node = in_node;
         //this.play_role = in_play_role;
         this.initiator = in_initiator;
+        this.snapshot_times = 0;
     }
 
     public static void CL_snapshot_Thread_executor(Node node){
@@ -37,11 +40,15 @@ public class CL_snapshot implements Runnable{
     public void run(){
         //System.out.println("======Graph Test=======");
         while(!node.getGlobal_snapshot_touchdown()) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 10; i++) {
+                node.setLocal_snapshot_time_addone();
+                node.setInitiator(this.initiator);
                 if (node.getNid().equals(this.initiator)) CL_snapshot.graph_establishing(node, CL_snapshot.graph.root);
-
                 while (!node.getGlobal_snapshot_complete()) {
-                    while (node.getSnapshot_buffer().size() == 0) System.out.print("Waiting response...........\r");
+                    while (node.getSnapshot_buffer().size() == 0) {
+                        System.out.print("Waiting response........... Received snapshot "+ node.getSnapshot().entrySet().toString() +"\r");
+                    }
+
                     //if(!node.getBuffer().isEmpty()) processing_graph_message(node);
                     processing_graph_message(node);
                     if (node.getGlobal_snapshot_start_point() && node.getSnapshot().size() == node.getNode_numbers()) {
@@ -66,7 +73,7 @@ public class CL_snapshot implements Runnable{
                     e.printStackTrace();
                 }
             }
-
+            node.resetLocal_snapshot_time();
             node.setGlobal_snapshot_start_point(false);
             node.setGlobal_snapshot_times_addone();
             if (node.getGlobal_snapshot_times() == node.getNode_numbers()) node.setGlobal_snapshot_touchdown(true);
@@ -146,7 +153,9 @@ public class CL_snapshot implements Runnable{
                                 receiver,
                                 node.getNeighbors_information().get(receiver)[0],
                                 node.getNeighbors_information().get(receiver)[1],
-                                com_msg_packaging.action_options.Establish_graph);
+                                com_msg_packaging.action_options.Establish_graph,
+                                node.getInitiator(),
+                                node.getLocal_snapshot_time());
                         com_requester graph_establishing = new com_requester(establish_graph);
                         graph_establishing.send();
                     }
@@ -163,7 +172,19 @@ public class CL_snapshot implements Runnable{
     }
 
     public static void processing_graph_message(Node node){
+        boolean ok = false;
         com_msg_packaging target = node.getSnapshot_Buffer_popout();
+
+        while(!ok){
+            while( !( target.getInitiator().equals(node.getInitiator()) && target.getSnapshot_it() == node.getLocal_snapshot_time()) ){
+                //System.out.println("Target sender: " + target.getSender() + " ; " + "Caller: " + node.getInitiator());
+                //System.out.println("Target it: " + target.getSnapshot_it() + "Local iteration: " + node.getLocal_snapshot_time());
+                node.setSnapshot_buffer_pushin(target);
+                target = new com_msg_packaging(node.getSnapshot_Buffer_popout());
+            }
+            ok = true;
+        }
+
 
         if(target.getAct_selected().equals(com_msg_packaging.action_options.Maker_reply)){
             node.MergeSnapshot(target.getSender_snapshot_set());
@@ -209,7 +230,9 @@ public class CL_snapshot implements Runnable{
                 node.getParent().lastElement(),
                 node.getNeighbors_information().get( node.getParent().lastElement())[0],
                 node.getNeighbors_information().get( node.getParent().lastElement())[1],
-                com_msg_packaging.action_options.Maker_reply);
+                com_msg_packaging.action_options.Maker_reply,
+                node.getInitiator(),
+                node.getLocal_snapshot_time());
         com_requester maker_reply = new com_requester(maker_reply_msg);
         maker_reply.send();
         node.setGlobal_snapshot_complete(true);
