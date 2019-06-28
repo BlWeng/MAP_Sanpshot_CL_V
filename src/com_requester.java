@@ -26,7 +26,6 @@ public class com_requester {
         }
 
     public void send(){
-            //this.node.setNm_msg_sent();
         while( this.requested && !this.sent) {
             try {
                 com_port = new Socket(InetAddress.getLocalHost(), this.rv.getReceiver_port());
@@ -37,18 +36,6 @@ public class com_requester {
 
                 com_port = new Socket(InetAddress.getByName(go_ip), this.rv.getReceiver_port());
 */
-/*
-                String s_id;
-
-                    if (this.rv. < 10)
-                        server_id = "dc0" + this.rv.getReceiver() + ".utdallas.edu";
-                    else
-                        server_id = "dc" + this.rv.getReceiver() + ".utdallas.edu";
-
-
-               com_port = new Socket(server_id, 5000+this.rv.getReceiver());
-*/
-
 
                 ObjectOutputStream oos = new ObjectOutputStream(com_port.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(com_port.getInputStream());

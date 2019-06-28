@@ -42,15 +42,19 @@ public class Node implements Serializable{
     private int expected_child_message;
     private int received_child_message;
     private boolean visited;
-    private String parent;
+    //private String parent;
+    private Vector<String> parent;
+
+    private boolean leaf;
+
     private HashMap<String, int[]> snapshot;
     private int[] global_snapshot;
     private boolean consistency;
 
-    private HashMap<String, String[]> neighbors_information;
+    private Vector<com_msg_packaging> snapshot_buffer;
+    //private ArrayList<com_msg_packaging> buffer;
 
-    //private Vector<com_msg_packaging> buffer;
-    private ArrayList<com_msg_packaging> buffer;
+    private Vector<com_msg_packaging> MAP_buffer;
 
     private com_msg_packaging processing_message;
 
@@ -66,39 +70,36 @@ public class Node implements Serializable{
 
     private boolean has_replied;
 
-    // Constructor of Node
-    //public Node(String in_nodeID, String[] node_config, String[] sys_setup) {
-    public Node(String in_nodeID, String[] node_config, String[] sys_setup, HashMap<String, String[]> in_neighbors_information) {
+    private Vector<String> asked_list;
 
-        this.neighbors_information = new HashMap<>(in_neighbors_information);
+    private boolean graph_complete;
+
+    private Vector<String> global_snapshot_finished_list;
+
+    private boolean snapshot_activate;
+
+    private int global_snapshot_times;
+
+    private boolean MAP_protocol_termination;
+
+    public enum data_category{
+        server_specification,
+        node_specification,
+        node_neighbors
+    }
+    private HashMap<data_category, HashMap<String, String[]>> database;
+
+    private String[] node_config;
+    private String[] sys_setup;
+    private HashMap<String, String[]> neighbors_information;
+
+
+    // Constructor of Node
+    public Node(String in_nodeID) {
 
         this.nid = in_nodeID; // assign node ID
 
-        this.node_ip = node_config[0];
-
-        try {
-            //this.port = new ServerSocket(this.nid + 5000);
-            //System.out.println("[*] Server Port: " + (this.nid + 5000) + " created.");
-            this.port = new ServerSocket(Integer.parseInt(node_config[1]));
-            //this.port = new ServerSocket(Integer.parseInt(node_config[1]), 10);
-            System.out.println(
-                    "\nNode " + this.nid + " :\n" +
-                    "Server Port: " + this.port
-                    + " with IP: " + InetAddress.getLocalHost()+ " created.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        this.logical_time = new int[Integer.parseInt(sys_setup[0])];
         this.lock = false;
-
-        this.node_numbers = Integer.parseInt(sys_setup[0]);
-        this.minPerActive = Integer.parseInt(sys_setup[1]);
-        this.maxPerActive = Integer.parseInt(sys_setup[2]);
-        this.minSendDelay = Integer.parseInt(sys_setup[3]);
-        this.snapshotDelay =Integer.parseInt(sys_setup[4]);
-        this.maxNumber = Integer.parseInt(sys_setup[5]);
 
         this.node_status = status.passive;
 
@@ -106,20 +107,14 @@ public class Node implements Serializable{
 
         this.message_receive = 0;
 
-        //this.expected_child_message = -1;
-
-        //this.received_child_message = 0;
-
-        //this.visited = false;
-
-        this.parent = "";
+        this.parent = new Vector<>();
 
         this.snapshot = new HashMap<>();
 
         //this.buffer = new Vector<>();
-        this.buffer = new ArrayList<>();
+        this.snapshot_buffer = new Vector<>();
 
-        this.global_snapshot = new int[this.node_numbers];
+        //this.global_snapshot = new int[this.node_numbers];
 
         this.ok_for_next_global_snapshot = false;
 
@@ -129,8 +124,23 @@ public class Node implements Serializable{
 
         this.has_replied = false;
 
-    }
+        this.leaf = false;
 
+        this.asked_list = new Vector<>();
+
+        this.graph_complete = false;
+
+        this.global_snapshot_finished_list = new Vector<>();
+
+        this.snapshot_activate = false;
+
+        this.global_snapshot_times = 0;
+
+        this.MAP_buffer = new Vector<>();
+
+        this.MAP_protocol_termination = false;
+
+    }
 
     // Get Functions
     public String getNid() { return nid;}
@@ -160,7 +170,8 @@ public class Node implements Serializable{
 
     public boolean getVisited() {return this.visited;}
 
-    public String getParent() {return this.parent;}
+    //public String getParent() {return this.parent;}
+    public Vector<String> getParent() {return this.parent;}
 
     public HashMap<String, int[]> getSnapshot() {return this.snapshot;}
 
@@ -168,25 +179,13 @@ public class Node implements Serializable{
 
     public boolean getConsitency() {return this.consistency;}
 
-    public HashMap<String, String[]> getNeighbors_information() {return this.neighbors_information;}
-
-/*
-    public com_msg_packaging getBuffer_popout() {
-        com_msg_packaging temp = new com_msg_packaging(this.buffer.firstElement());
-        this.buffer.remove(0);
+    public com_msg_packaging getSnapshot_Buffer_popout() {
+        com_msg_packaging temp = new com_msg_packaging(this.snapshot_buffer.get(0));
+        this.snapshot_buffer.remove(0);
         return temp;
     }
 
-    public Vector<com_msg_packaging> getBuffer() {return this.buffer;}
-*/
-
-    public com_msg_packaging getBuffer_popout() {
-        com_msg_packaging temp = new com_msg_packaging(this.buffer.get(0));
-        this.buffer.remove(0);
-        return temp;
-    }
-
-    public ArrayList<com_msg_packaging> getBuffer() {return this.buffer;}
+    public Vector<com_msg_packaging> getSnapshot_buffer() {return this.snapshot_buffer;}
 
     public com_msg_packaging getProcessing_message() {return this.processing_message;}
 
@@ -202,8 +201,30 @@ public class Node implements Serializable{
 
     public boolean getHas_replied() {return this.has_replied;}
 
+    public boolean getLeaf() {return this.leaf;}
+
+    public Vector<String> getAsked_list() {return this.asked_list;}
+
+    public boolean getGraph_complete() {return this.graph_complete;}
+
+    public Vector<String> getGlobal_snapshot_finished_list() {return this.global_snapshot_finished_list;}
+
+    public boolean getSnapshot_activate() {return this.snapshot_activate;}
+
+    public int getGlobal_snapshot_times() {return this.global_snapshot_times;}
+
+    public Vector<com_msg_packaging> getMAP_buffer() {return this.MAP_buffer;}
+
+    public boolean getMAP_protocol_termination() {return this.MAP_protocol_termination;}
+
+    public HashMap<data_category, HashMap<String, String[]>> getDatabase() {return this.database;}
+
+    public String[] getNode_config() {return this.node_config;}
+    public String[] getSys_setup() {return this.sys_setup;}
+    public HashMap<String, String[]> getNeighbors_information() {return this.neighbors_information;}
+
     // Set Functions
-    public void setNode_ip(String dv) {this.node_ip = dv;}
+
     //public void setLogical_time_unit_increase() {this.logical_time++;}
     //public void setLogical_time_assign_value_pls_one( int a_t) { this.logical_time = a_t + 1; }
     public void setLogical_time_unit_increase() {this.logical_time[Integer.parseInt(this.nid)]++;}
@@ -231,20 +252,28 @@ public class Node implements Serializable{
 
     public void setMessage_receive_unit_increase() {this.message_receive++;}
 
+    public void initialize_Expected_child_message_unit_decrease(int dv) {this.expected_child_message = dv;}
     public void setExpected_child_message_unit_decrease() {this.expected_child_message--;}
     public void resetExpected_child_message() {
-        this.expected_child_message = this.neighbors_information.size()-1;}
+        this.expected_child_message = this.neighbors_information.size();}
 
     public void setReceived_child_message_unit_increase() {this.received_child_message++;}
     public void resetReceived_child_message() {this.received_child_message = 0;}
 
     public void setVisited(boolean dv) {this.visited = dv;}
 
-    public void setParent(String dv) {this.parent = dv;}
+    //public void setParent(String dv) {this.parent = dv;}
+    public void setParent_addset(Vector<String> dv) {this.parent.addAll(dv);}
+
+    public void setParent_addelement(String dv) {this.parent.add(dv);}
+
+    public void resetParent() {this.parent.clear();}
 
     public void setSnapshot(String nid, int[] time_vector) {this.snapshot.put(nid, time_vector);}
     public void MergeSnapshot(HashMap<String, int[]> dv) {this.snapshot.putAll(dv);}
     public void resetSnapshot() {this.snapshot.clear();}
+
+    public void initialize_Global_snapshot(int dv) {this.global_snapshot = new int[dv];}
 
     public void setGlobal_snapshot(int node_number, int n_logical_time) {
         this.global_snapshot[node_number] = n_logical_time;
@@ -258,8 +287,8 @@ public class Node implements Serializable{
         this.neighbors_information.putAll(reset_set);
     }
 
-    public void setBuffer_pushin(com_msg_packaging dv) {this.buffer.add(dv);}
-    public void resetBuffer() {this.buffer.clear();}
+    public void setSnapshot_buffer_pushin(com_msg_packaging dv) {this.snapshot_buffer.add(dv);}
+    public void resetSnapshot_Buffer() {this.snapshot_buffer.clear();}
 
     public void setProcessing_message(com_msg_packaging dv) {this.processing_message = new com_msg_packaging(dv);}
 
@@ -274,4 +303,57 @@ public class Node implements Serializable{
     public void setGlobal_snapshot_touchdown(boolean dv) {this.global_snapshot_touchdown = dv;}
 
     public void setHas_replied(boolean dv) {this.has_replied = dv;}
+
+    public void setLeaf(boolean dv) {this.leaf = dv;}
+
+    public void setAsked_list(String dv) {this.asked_list.add(dv);}
+
+    public void resetAsked_list() {this.asked_list.clear();}
+
+    public void setGraph_complete(boolean dv) {this.graph_complete=dv;}
+
+    public void setGlobal_snapshot_finished_list_addself() {this.global_snapshot_finished_list.add(this.nid);}
+    public void resetGlobal_snapshot_finished_list_addone() {this.global_snapshot_finished_list.clear();}
+
+    public void setSnapshot_activate(boolean dv) {this.snapshot_activate = dv;}
+
+    public void setGlobal_snapshot_times_addone() {this.global_snapshot_times++;}
+    public void resetGlobal_snapshot_times() {this.global_snapshot_times=0;}
+
+    public void setMAP_buffer_addone(com_msg_packaging dv) {this.MAP_buffer.add(dv);}
+    public void resetMAP_buffer() {this.MAP_buffer.clear();}
+
+    public void setMAP_protocol_termination(boolean dv) {this.MAP_protocol_termination=dv;}
+
+    public void setDatabase(HashMap<data_category, HashMap<String, String[]>> in_database){
+        this.database = new HashMap<data_category, HashMap<String, String[]>> (in_database);
+    }
+
+     public void setNode_config(String[] dv) { this.node_config = dv.clone(); }
+     public void setSys_setup(String[] dv) { this.sys_setup = dv.clone();}
+     public void setNeighbors_information(HashMap<String, String[]> dv)
+                { this.neighbors_information = new HashMap<String, String[]>(dv);}
+
+    public void setlogical_time(int dv) {this.logical_time = new int[dv];}
+    public void setNode_numbers(int dv) {this.node_numbers = dv;}
+    public void setMinPerActive(int dv) {this.minPerActive = dv;}
+    public void setMaxPerActive(int dv) {this.maxPerActive = dv;}
+    public void setMinSendDelay(int dv) {this.minSendDelay = dv;}
+    public void setSnapshotDelay(int dv) {this.snapshotDelay = dv;}
+    public void setMaxNumber(int dv) {this.maxNumber = dv;}
+    public void setNode_ip(String dv){this.node_ip = dv;}
+    public void setPort(String dv){
+        try {
+            //this.port = new ServerSocket(this.nid + 5000);
+            //System.out.println("[*] Server Port: " + (this.nid + 5000) + " created.");
+            this.port = new ServerSocket(Integer.parseInt(dv));
+            //this.port = new ServerSocket(Integer.parseInt(node_config[1]), 10);
+            System.out.println(
+                    "\nNode " + this.nid + " :\n" +
+                            "Server Port: " + this.port
+                            + " with IP: " + InetAddress.getLocalHost()+ " created.");
+        } catch (IOException e) { e.printStackTrace();}
+    }
+
+
 }

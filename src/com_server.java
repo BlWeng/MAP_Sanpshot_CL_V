@@ -17,8 +17,6 @@ public class com_server implements Runnable{
         this.node = node;
     }
 
-
-    //public void operation() throws Exception{
     @Override
     public void run(){
 

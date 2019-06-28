@@ -53,22 +53,22 @@ public class com_handler implements Runnable, Serializable {
             while (running.get()) {
 
                 com_msg_packaging in = (com_msg_packaging) ois.readObject();
+
                 System.out.println(">> In ID: " + in.getSender() + " Host node: " + this.node.getNid());
                 System.out.println(">> Action: " + in.getAct_selected());
-                //System.out.println(">> Action: " + in.getAct_selected() + " Calling option: " + in.getCalling_action());
 
-                //this.node.setLogical_time_assign_value_pls_one(in.getSender_logical_time());
                 this.node.setLogical_time_Fidge_Mattern(in.getSender_logical_time());
-
-                //com_msg_packaging processing_msg = new com_msg_packaging(in);
-                //processing_msg.setSender_logical_time(this.node.getLogical_time());
 
                 this.node.setMessage_receive_unit_increase();
 
                 System.out.println("Message received: " + node.getMessage_receive());
 
+                if(in.getAct_selected().equals(com_msg_packaging.action_options.Establish_graph) ||
+                        in.getAct_selected().equals(com_msg_packaging.action_options.Maker_reply))
+                    node.setSnapshot_buffer_pushin(in);
 
                 if(in.getAct_selected().equals(com_msg_packaging.action_options.MAP_request)) {
+                    node.setMAP_buffer_addone(in);
                     if (this.node.getNode_status().equals(Node.status.passive)
                             && this.node.getMessage_sent() < this.node.getMaxNumber()
                             && in.getAct_selected().equals(com_msg_packaging.action_options.MAP_request))
@@ -76,32 +76,7 @@ public class com_handler implements Runnable, Serializable {
                         this.node.setNode_status(Node.status.active);
                     }
                 }
-                else if(in.getAct_selected().equals(com_msg_packaging.action_options.Okay_for_next)) {
-                /*
-                    if(node.getGlobal_snapshot_start_point()){
-                        node.setGlobal_snapshot_start_point(false);
-                        node.setGlobal_snapshot_touchdown(true);
-                        CL_snapshot.converge_cast_dyn(node, com_msg_packaging.action_options.Touchdown);
-                    }
-                    else node.setOk_for_next_global_snapshot(true);
-                */
-                System.out.println("==================IN OKAY FOR NEXT======================");
 
-                    CL_snapshot.Global_snapshot_activator(node, CL_snapshot.roles.initiator);
-                }
-
-                else if(in.getAct_selected().equals(com_msg_packaging.action_options.Inform_finish)){
-                    node.setGlobal_snapshot_touchdown(true);
-                }
-                else
-                {
-                    //Thread.sleep(100);
-                    System.out.println("Preparing to push in Buffer: " + in.getSender());
-                    try {
-                        this.node.setBuffer_pushin(in);
-                    }catch (Exception e) {e.printStackTrace();}
-                    System.out.println("Message Buffer in handler size: " + this.node.getBuffer().size());
-                }
 
             }
         }catch(Exception e){}
