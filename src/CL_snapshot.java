@@ -46,7 +46,8 @@ public class CL_snapshot implements Runnable{
                 if (node.getNid().equals(this.initiator)) CL_snapshot.graph_establishing(node, CL_snapshot.graph.root);
                 while (!node.getGlobal_snapshot_complete()) {
                     while (node.getSnapshot_buffer().size() == 0) {
-                        System.out.print("Waiting response........... Received snapshot "+ node.getSnapshot().entrySet().toString() +"\r");
+                        //System.out.print("Waiting response........... Received snapshot "+ node.getSnapshot().entrySet().toString() +"\r");
+                        System.out.print("Waiting response...........\r");
                     }
 
                     //if(!node.getBuffer().isEmpty()) processing_graph_message(node);

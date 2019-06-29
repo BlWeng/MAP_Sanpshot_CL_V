@@ -28,10 +28,13 @@ public class com_requester {
     public void send(){
         while( this.requested && !this.sent) {
             try {
-                com_port = new Socket(InetAddress.getLocalHost(), this.rv.getReceiver_port());
-               // com_port = new Socket(InetAddress.getByName(this.rv.getReceiver_ip()+".utdallas.edu"),
-               //         this.rv.getReceiver_port());
-
+                //com_port = new Socket(InetAddress.getLocalHost(), this.rv.getReceiver_port());
+                com_port = new Socket(InetAddress.getByName(this.rv.getReceiver_ip()+".utdallas.edu"), this.rv.getReceiver_port());
+/*
+                String go_ip = this.rv.getReceiver_ip()+".utdallas.edu";
+                System.out.println("IP: " + go_ip);
+                com_port = new Socket(InetAddress.getByName(go_ip), this.rv.getReceiver_port());
+*/
                 ObjectOutputStream oos = new ObjectOutputStream(com_port.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(com_port.getInputStream());
 
@@ -42,6 +45,7 @@ public class com_requester {
             } catch (Exception e) {
                 //i--;
                 System.out.print("Port of Node " + this.rv.getReceiver() + " is not ready.\r");
+                e.printStackTrace();
             }
         }
     }
