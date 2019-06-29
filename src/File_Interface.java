@@ -63,11 +63,7 @@ public class File_Interface {
     public static void write_file(Node node) {
         try {
             //System.out.println("Enter write file.");
-            //String home = System.getProperty("C:\\Users\\a62ba\\Desktop\\Spring_2019_CS6378_AOS_Undergoing\\AOS_Project2\\out\\production\\AOS_Project2");
             String cwd = System.getProperty("user.dir") + "\\configuration-" + node.getNid() + ".out";
-            //String cwd = System.getProperty("user.home\\server01") + "\\record.txt";
-            //String cwd = System.getProperty("\\home\\eng\\b\\bxw170030\\sever01") + "\\record.txt";
-            //String cwd = System.getProperty("user.home") + "\\record.txt";
             //String cwd = System.getProperty("user.home") + "\\configuration-" + node.getNid() + ".out";
             File f = new File(cwd);
             if (!f.exists()) {
